@@ -251,25 +251,27 @@ function animateBackground(s,dt){
   for(let i=0;i<6;i++){
     const radius=90+i*60;
     holo.lineStyle(1.5,0x30a3ff,0.2-i*0.02);
-    const cx=BOARD_X+BOARD_W/2, cy=CANVAS_H*0.65;
+    const cx=s.BX+s.BW/2, cy=s.BY+s.BH*0.65;
     holo.strokeCircle(cx,cy,radius+(Math.sin(t+i)*8));
   }
   const g=s.gGrid;
   g.clear();
-  const baseY=CANVAS_H*0.55;
+  const W=s.scale.gameSize.width,H=s.scale.gameSize.height;
+  const baseY=s.BY+s.BH*0.55;
   g.lineStyle(1,0x0d3661,0.45);
   for(let x=-8;x<=8;x++){
-    const sx=BOARD_X+BOARD_W/2+x*40;
-    g.lineBetween(sx,baseY,sx+(x*18),CANVAS_H);
+    const sx=s.BX+s.BW/2+x*s.CELL*1.4;
+    g.lineBetween(sx,baseY,sx+x*s.CELL*0.9,H);
   }
   g.lineStyle(1,0x36139a,0.35);
   for(let i=0;i<18;i++){
-    const y=baseY+i*18;
-    g.lineBetween(BOARD_X-180,y,BOARD_X+BOARD_W+180,y+Math.sin(t+i)*10);
+    const y=baseY+i*s.CELL*0.9;
+    g.lineBetween(s.BX-s.CELL*6,y,s.BX+s.BW+s.CELL*6,y+Math.sin(t+i)*10);
   }
   s.overlay.clear();
   s.overlay.fillStyle(0x120030,0.25);
-  s.overlay.fillRect(BOARD_X-8,BOARD_Y,BOARD_W+16,BOARD_H);
+  const pad=Math.max(4,Math.floor(s.CELL*0.4));
+  s.overlay.fillRect(s.BX-pad,s.BY-pad,s.BW+pad*2,s.BH+pad*2);
 }
 
 function bindKeys(scene){
@@ -324,10 +326,10 @@ function updatePreview(scene){
   g.setDepth(6);
   const spec=SPECIES[scene.nextPiece.species];
   const shape=SHAPES[scene.nextPiece.shape][0];
-  const offset=20;
+  const u=scene.previewCell;
   for(let i=0;i<4;i++){
     const x=shape[i][0],y=shape[i][1];
-    drawAnimalCell(g,(x-1)*18,(y-1)*18,18,spec,false,1);
+    drawAnimalCellPreview(scene,g,(x-1)*u,(y-1)*u,u,spec,false);
   }
   scene.nextName.setText(`ESPECIE: ${spec.name.toUpperCase()}`);
 }
@@ -491,7 +493,7 @@ function clearRows(scene){
 
 function flashBonus(scene,text){
   if(scene.bonusText) scene.bonusText.destroy();
-  scene.bonusText=scene.add.text(BOARD_X+BOARD_W/2,120,text,{
+  scene.bonusText=scene.add.text(scene.BX+scene.BW/2,scene.BY+Math.max(scene.CELL*2.5,100),text,{
     fontFamily:'monospace',
     fontSize:22,
     color:'#fff2ff',
@@ -512,7 +514,7 @@ function drawBoard(scene,g){
   for(let y=0;y<GRID_H;y++){
     for(let x=0;x<GRID_W;x++){
       const v=scene.board[y*GRID_W+x];
-      if(v>=0) drawBlock(g,x,y,SPECIES[v],false);
+      if(v>=0) drawBlock(scene,g,x,y,SPECIES[v],false);
     }
   }
 }
@@ -524,26 +526,31 @@ function drawCurrent(scene,g){
   while(!collides(scene,scene.cur.x,dropY+1,scene.cur.rot)) dropY++;
   for(let i=0;i<4;i++){
     const gx=scene.cur.x+pts[i][0],gy=dropY+pts[i][1];
-    if(gy>=0) drawBlock(g,gx,gy,SPECIES[scene.cur.species],true,0.18);
+    if(gy>=0) drawBlock(scene,g,gx,gy,SPECIES[scene.cur.species],true,0.18);
   }
   for(let i=0;i<4;i++){
     const gx=scene.cur.x+pts[i][0],gy=scene.cur.y+pts[i][1];
-    if(gy>=0) drawBlock(g,gx,gy,SPECIES[scene.cur.species],false);
+    if(gy>=0) drawBlock(scene,g,gx,gy,SPECIES[scene.cur.species],false);
   }
 }
 
-function drawBlock(g,gx,gy,spec,ghost,ghostAlpha){
-  const px=BOARD_X+gx*CELL,py=BOARD_Y+gy*CELL;
+function drawBlock(scene,g,gx,gy,spec,ghost,ghostAlpha){
+  const px=scene.BX+gx*scene.CELL;
+  const py=scene.BY+gy*scene.CELL;
   const alpha=ghost?(ghostAlpha||0.15):0.85;
-  drawAnimalCell(g,px,py,CELL,spec,ghost,alpha);
+  drawAnimalCell(scene,g,px,py,scene.CELL,spec,ghost,alpha);
 }
 
-function drawAnimalCell(g,px,py,size,spec,ghost,alpha){
-  const pad=ghost?3:2;
+function drawAnimalCell(scene,g,px,py,size,spec,ghost,alpha){
+  const pad=ghost?Math.max(2,Math.floor(size*0.1)):Math.max(1,Math.floor(size*0.08));
+  g.fillStyle(0x000000,0.18*alpha);
+  g.fillRoundedRect(px+pad,py+pad,size-pad*2,size-pad*2,Math.max(2,size*0.18));
   g.fillStyle(spec.body,alpha);
-  g.fillRoundedRect(px+pad,py+pad,size-pad*2,size-pad*2,6);
-  g.lineStyle(ghost?1:2,spec.glow,ghost?0.4:0.95);
-  g.strokeRoundedRect(px+pad-1,py+pad-1,size-pad*2+2,size-pad*2+2,6);
+  g.fillRoundedRect(px+pad-1,py+pad-1,size-pad*2-1,size-pad*2-1,Math.max(2,size*0.2));
+  g.lineStyle(1,0xffffff,0.35*alpha);
+  g.strokeRect(px+0.5,py+0.5,size-1,size-1);
+  g.lineStyle(1,spec.glow,ghost?0.45:0.85);
+  g.strokeRoundedRect(px+pad-1,py+pad-1,size-pad*2+2,size-pad*2+2,Math.max(2,size*0.22));
   const headSize=size*0.32;
   if(spec.name==='cow'){
     g.fillStyle(spec.accent,ghost?0.25:0.6);
@@ -573,6 +580,11 @@ function drawAnimalCell(g,px,py,size,spec,ghost,alpha){
   }
 }
 
+function drawAnimalCellPreview(scene,g,px,py,size,spec,ghost){
+  const alpha=ghost?0.4:1;
+  drawAnimalCell(scene,g,px,py,size,spec,ghost,alpha);
+}
+
 function updateHUD(scene){
   scene.hudText.setText(
     `SCORE ${scene.score}\nLINEAS ${scene.lines}\nNIVEL ${scene.level}\nDROP ${Math.floor(scene.drop)}ms`
@@ -597,23 +609,24 @@ function resetGame(scene){
 }
 
 function drawScanlines(scene){
-  const scan=scene.add.graphics();
-  for(let y=0;y<CANVAS_H;y+=2){
-    scan.fillStyle(0x000000,0.12);
-    scan.fillRect(0,y,CANVAS_W,1);
+  scene.scanlines.clear();
+  const W=scene.scale.gameSize.width,H=scene.scale.gameSize.height;
+  for(let y=0;y<H;y+=2){
+    scene.scanlines.fillStyle(0x000000,0.12);
+    scene.scanlines.fillRect(0,y,W,1);
   }
-  scan.setDepth(10);
-  scan.setBlendMode(Phaser.BlendModes.MULTIPLY);
 }
 
 function drawVignette(scene){
-  const g=scene.add.graphics();
+  const g=scene.vignette;
+  g.clear();
+  const W=scene.scale.gameSize.width,H=scene.scale.gameSize.height;
+  const band=Math.max(40,Math.floor(scene.CELL*2.5));
   g.fillStyle(0x000000,0.35);
-  g.fillRect(0,0,CANVAS_W,40);
-  g.fillRect(0,CANVAS_H-40,CANVAS_W,40);
-  g.fillRect(0,0,40,CANVAS_H);
-  g.fillRect(CANVAS_W-40,0,40,CANVAS_H);
-  g.setDepth(11);
+  g.fillRect(0,0,W,band);
+  g.fillRect(0,H-band,W,band);
+  g.fillRect(0,0,band,H);
+  g.fillRect(W-band,0,band,H);
 }
 
 function beep(scene,freq,dur){
