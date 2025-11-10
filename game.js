@@ -241,14 +241,17 @@ this.bgClouds=this.add.tileSprite(V_W/2,V_H/2,V_W,V_H,'bg_clouds').setScrollFact
 this.bgFar=this.add.tileSprite(V_W/2,V_H/2,V_W,V_H,'bg_far');
 this.bgMid=this.add.tileSprite(V_W/2,V_H/2,V_W,V_H,'bg_mid');
 this.add.graphics().fillStyle(0x0a0515,.45).fillRect(0,0,V_W,V_H);
-this.add.text(V_W/2,V_H*.32,'PLATANUS\nVACA-LIFT',{
+this.add.text(V_W/2,V_H*.32,'COW LIFT',{
   fontFamily:'monospace',fontSize:'64px',color:'#35f6ff',align:'center',stroke:'#ff00ff',strokeThickness:6
 }).setOrigin(.5);
-this.add.text(V_W/2,V_H*.52,'Sube con jetpack, recoge platanos y cafe. Evita gatos.',{
+this.add.text(V_W/2,V_H*.52,'Impulsa la vaca con jetpack, recoge platanos y cafe. Evita gatos.',{
   fontFamily:'monospace',fontSize:'20px',color:'#fff06d'
 }).setOrigin(.5);
 this.add.text(V_W/2,V_H*.61,'P1A: Jetpack | P1B: Dash Aereo | START1: Jugar',{
   fontFamily:'monospace',fontSize:'18px',color:'#bdf8ff'
+}).setOrigin(.5);
+this.add.text(V_W/2,V_H*.68,'Autor: Cristobal Herrera Jara',{
+  fontFamily:'monospace',fontSize:'16px',color:'#bdf8ff'
 }).setOrigin(.5);
 const prompt=this.add.text(V_W/2,V_H*.74,'Presiona START1 (Enter o R)',{
 fontFamily:'monospace',fontSize:'24px',color:'#ffff00'
