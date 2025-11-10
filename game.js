@@ -282,7 +282,7 @@ this.add.text(V_W/2,V_H*.52,`Impulsa la vaca con jetpack, recoge platanos y cafe
 this.add.text(V_W/2,V_H*.61,'P1A: Jetpack | P1B: Dash Aereo | START1: Jugar',{
   fontFamily:'monospace',fontSize:'18px',color:'#bdf8ff'
 }).setOrigin(.5);
-this.add.text(V_W/2,V_H*.68,'Autor: Cristobal Herrera Jara',{
+this.add.text(V_W/2,V_H*.68,'Autor: Cristóbal Herrera Jara',{
   fontFamily:'monospace',fontSize:'16px',color:'#bdf8ff'
 }).setOrigin(.5);
 const prompt=this.add.text(V_W/2,V_H*.74,'Presiona START1 (Enter o R)',{
